@@ -1,5 +1,7 @@
-#
-#
+# VPC を作成した段階で自動で Main Route Table が作成されるため、
+# シンプルな構成であれば、それを利用するのが良いと思う。
+# また Subnet を明示的に関連付けしなかった場合も Main Route Table が 使われるとのこと。
+# see: https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html#main-route-table
 #
 
 # see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs
@@ -45,12 +47,6 @@ resource "aws_subnet" "c" {
   }
 }
 
-# VPC を作成した段階で自動でメインルートテーブルが作成されるため、
-# シンプルな構成で問題なければそれを利用するので問題ないと思う。
-# また subnet を明示的に関連付けしなかった場合もメインルートテーブルが
-# 使われるとのこと。
-# see: https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html#main-route-table
-#
 # see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association
 resource "aws_route_table_association" "a" {
   route_table_id = aws_vpc.main.main_route_table_id
