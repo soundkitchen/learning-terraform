@@ -4,16 +4,26 @@
 # see: https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html#main-route-table
 #
 
-# see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs
-provider "aws" {
+locals {
+  # 10.0.0.0 ~ 10.0.255.255
+  cidr_block = "10.0.0.0/16"
   # 今回は AZ 名が事前に必要なのでリージョンは固定
   region = "ap-northeast-1"
+  #
+  availability_zones = [
+    "ap-northeast-1a",
+    "ap-northeast-1c",
+  ]
+}
+
+# see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+provider "aws" {
+  region = local.region
 }
 
 # see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc
 resource "aws_vpc" "main" {
-  # 10.0.0.0 ~ 10.0.255.255
-  cidr_block = "10.0.0.0/16"
+  cidr_block = local.cidr_block
 
   enable_dns_support = true
 
@@ -26,36 +36,29 @@ resource "aws_vpc" "main" {
   }
 }
 
-# see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet
-resource "aws_subnet" "a" {
-  vpc_id            = aws_vpc.main.id
-  availability_zone = "ap-northeast-1a"
-  # 10.0.0.0 ~ 10.0.0.255
-  cidr_block = "10.0.0.0/24"
-  tags = {
-    Name = "Learning Terraform A"
+## see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet
+resource "aws_subnet" "main" {
+  # locals で指定したavailability_zone の数だけ subnet を作成する
+  for_each = {
+    for i, az in local.availability_zones : i => az
   }
-}
 
-resource "aws_subnet" "c" {
   vpc_id            = aws_vpc.main.id
-  availability_zone = "ap-northeast-1c"
-  # 10.0.1.0 ~ 10.0.1.255
-  cidr_block = "10.0.1.0/24"
-  tags = {
-    Name = "Learning Terraform C"
-  }
+  availability_zone = each.value
+  # 10.0.0.0/16 => 10.0.0.0/24
+  #             => 10.0.1.0/24
+  #             => 10.0.2.0/24
+  #             ...
+  cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, each.key)
 }
 
-# see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association
-resource "aws_route_table_association" "a" {
-  route_table_id = aws_vpc.main.main_route_table_id
-  subnet_id      = aws_subnet.a.id
-}
+# see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/internet_gateway
+resource "aws_route_table_association" "main" {
+  # 作成した Subnet の数だけ route_table との関連付けも作成する
+  for_each = aws_subnet.main
 
-resource "aws_route_table_association" "c" {
   route_table_id = aws_vpc.main.main_route_table_id
-  subnet_id      = aws_subnet.c.id
+  subnet_id      = each.value.id
 }
 
 # see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/internet_gateway
