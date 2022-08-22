@@ -50,6 +50,10 @@ resource "aws_subnet" "main" {
   #             => 10.0.2.0/24
   #             ...
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, each.key)
+
+  tags = {
+    Name = "Learning Terraform ${upper(replace(each.value, local.region, ""))}"
+  }
 }
 
 # see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/internet_gateway
