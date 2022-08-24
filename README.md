@@ -9,6 +9,7 @@ AWS 関連のものは実行するためには環境変数 `AWS_ACCESS_KEY_ID`, 
 * [S3 で静的ウェブサイト立てる](/aws-s3-static-website)
   * [独自ドメインで立てる](/aws-s3-static-website-with-alternative-domain)
     * [SSL に対応する](/aws-s3-static-website-with-ssl)
+* [EC2 用の IAM Role を作成する](/aws-iam-role-for-ec2)
 * [VPC を構築する](/aws-vpc)
   * [VPC にセキュリティグループを作成する](/aws-security-group-on-vpc)
 * [IAM でポリシー割り当てたユーザを作成する](/aws-iam-user)
