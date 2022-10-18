@@ -50,6 +50,9 @@ resource "aws_subnet" "main" {
   #             => 10.0.2.0/24
   #             ...
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, each.key)
+  # これを設定しない場合は Elastic IP を割り振らない限り
+  # 自動で EC2 に Public IP が割り当てられない。
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "Learning Terraform ${upper(replace(each.value, local.region, ""))}"
